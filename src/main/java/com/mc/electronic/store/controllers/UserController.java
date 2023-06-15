@@ -14,11 +14,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mc.electronic.store.dtos.ApiResponseMessage;
+import com.mc.electronic.store.dtos.PagableResponse;
 import com.mc.electronic.store.dtos.UserDTO;
 import com.mc.electronic.store.services.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/users")
@@ -31,7 +35,7 @@ public class UserController {
 	
 	//Create user
 	@PostMapping	
-	public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO){
+	public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO userDTO){
 		
 		UserDTO createdUser = this.userService.createUser(userDTO);
 		logger.info("created user from user controller --> "+createdUser.toString());
@@ -59,8 +63,14 @@ public class UserController {
 	
 	//Get All users
 	@GetMapping
-	public ResponseEntity<List<UserDTO>> getAllUsers(){
-		List<UserDTO> users = this.userService.getAllUsers();
+	public ResponseEntity<PagableResponse<UserDTO>> getAllUsers(
+			@RequestParam(value = "pageNumber", defaultValue = "0",required = false) int pageNumber,
+			@RequestParam(value = "pageSize", defaultValue = "10",required = false) int pageSize,
+			@RequestParam(value = "sortBy", defaultValue = "name ",required = false) String sortBy,
+			@RequestParam(value = "sortDir", defaultValue = "asc",required = false) String sortDir
+		
+			){
+		PagableResponse<UserDTO> users = this.userService.getAllUsers(pageNumber,pageSize,sortBy,sortDir);
 		return new ResponseEntity<>(users,HttpStatus.OK);
 	}
 	

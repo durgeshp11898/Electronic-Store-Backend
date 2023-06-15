@@ -2,6 +2,7 @@ package com.mc.electronic.store.services;
 
 import java.util.List;
 
+import com.mc.electronic.store.dtos.PagableResponse;
 import com.mc.electronic.store.dtos.UserDTO;
 
 
@@ -24,7 +25,7 @@ public interface UserService {
 	UserDTO getUserByEmail(String userEmail);
 	
 	//Get All Users
-	List<UserDTO> getAllUsers();
+	PagableResponse<UserDTO> getAllUsers(int pageNumber, int pageSize,String sortBy,String sortDir);
 	
 	//Search User by Id
 	List<UserDTO> searchUser(String keyword);
