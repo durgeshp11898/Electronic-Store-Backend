@@ -18,5 +18,10 @@
     "name": "category.prfile.image.path",
     "type": "java.lang.String",
     "description": "A description for 'category.prfile.image.path'"
+  },
+  {
+    "name": "product.prfile.image.path",
+    "type": "java.lang.String",
+    "description": "A description for 'product.prfile.image.path'"
   }
 ]}

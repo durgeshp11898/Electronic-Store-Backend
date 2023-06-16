@@ -78,7 +78,7 @@ public class CategoryController {
 	//get Single Category
 
 	@GetMapping("/{categoryId}")
-	public ResponseEntity<CategoryDTO> getSingleUser(@PathVariable String categoryId){
+	public ResponseEntity<CategoryDTO> getSingleCategory(@PathVariable String categoryId){
 
 		CategoryDTO categoryDTO = this.categoryService.getSingleCategoryById(categoryId);
 
@@ -133,7 +133,7 @@ public class CategoryController {
 
 	//Serve user Image
 	@GetMapping("/image/{categoryId}")
-	public void serveUserImage(@PathVariable("categoryId") String categoryId, HttpServletResponse httpServletResponse) throws IOException {
+	public void serveCategoryImage(@PathVariable("categoryId") String categoryId, HttpServletResponse httpServletResponse) throws IOException {
 		CategoryDTO categoryDTO = this.categoryService.getSingleCategoryById(categoryId);
 		logger.info("user image name-->{} "+categoryDTO.getCoverImage());
 
