@@ -63,8 +63,7 @@ public class UserService_Impl implements UserService {
 	public void deleteUser(String userId) {
 		User user = this.userRepository.findById(userId).orElseThrow(()-> new ResourceNotFoundException("User Not found with this ID"));
 		
-		
-		
+	
 		if(user!=null) {
 			//delete user profile image
 			String fullPath=imagePath+user.getUserImage();
