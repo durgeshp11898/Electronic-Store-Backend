@@ -1,11 +1,16 @@
 package com.mc.electronic.store.controllers;
 
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.lf5.util.StreamUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,12 +21,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.mc.electronic.store.dtos.ApiResponseMessage;
+import com.mc.electronic.store.dtos.ImageResponse;
 import com.mc.electronic.store.dtos.PagableResponse;
 import com.mc.electronic.store.dtos.UserDTO;
+import com.mc.electronic.store.services.FileService;
 import com.mc.electronic.store.services.UserService;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 @RestController
@@ -32,6 +41,13 @@ public class UserController {
 	
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private FileService fileService;
+	
+	//Value comes from aplication.properties file
+	@Value("${user.prfile.image.path}")
+	private String ImageUploadPath;
 	
 	//Create user
 	@PostMapping	
@@ -66,7 +82,7 @@ public class UserController {
 	public ResponseEntity<PagableResponse<UserDTO>> getAllUsers(
 			@RequestParam(value = "pageNumber", defaultValue = "0",required = false) int pageNumber,
 			@RequestParam(value = "pageSize", defaultValue = "10",required = false) int pageSize,
-			@RequestParam(value = "sortBy", defaultValue = "name ",required = false) String sortBy,
+			@RequestParam(value = "sortBy", defaultValue = "userName",required = false) String sortBy,
 			@RequestParam(value = "sortDir", defaultValue = "asc",required = false) String sortDir
 		
 			){
@@ -93,6 +109,47 @@ public class UserController {
 	public ResponseEntity<List<UserDTO>> searchusingMail(@PathVariable String keywords){
 		  List<UserDTO> users = this.userService.searchUser(keywords);
 		return new ResponseEntity<>(users,HttpStatus.OK);
+	}
+	
+	
+	//Upload user Image 
+	@PostMapping("/image/{userId}")
+	public ResponseEntity<ImageResponse> uploadUserImage(
+			@PathVariable("userId") String userId,
+		@RequestParam("userImage") MultipartFile userImage
+		){
+		
+		
+		String imageName=this.fileService.uploadFile(userImage, ImageUploadPath);
+		logger.info("Image name is {}"+imageName);
+		logger.info("Image upload Path -->"+ImageUploadPath);
+		
+		UserDTO user = this.userService.getUserById(userId);
+		user.setUserImage(imageName);
+		UserDTO updatedUser = this.userService.updateUser(user, userId);
+		logger.info("updated user is {} -->"+updatedUser);
+		
+		ImageResponse imageResponse= ImageResponse.builder().imageName(imageName).httpStatus(HttpStatus.CREATED).success(true).build();
+		
+		return new ResponseEntity<ImageResponse>(imageResponse,HttpStatus.CREATED);
+		
+		
+	}
+	
+	//Serve user Image
+	@GetMapping("/image/{userId}")
+	public void serveUserImage(@PathVariable("userId") String userId, HttpServletResponse httpServletResponse) throws IOException {
+		UserDTO user = this.userService.getUserById(userId);
+		logger.info("user image name-->{} "+user.getUserImage());
+		
+		InputStream inputStream = this.fileService.getResourceFile(ImageUploadPath, user.getUserImage());
+		
+		httpServletResponse.setContentType(MediaType.IMAGE_JPEG_VALUE);
+		
+		StreamUtils.copy(inputStream, httpServletResponse.getOutputStream());
+		
+		
+		
 	}
 	
 	

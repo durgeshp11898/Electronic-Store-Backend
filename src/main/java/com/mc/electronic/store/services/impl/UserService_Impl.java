@@ -2,6 +2,10 @@ package com.mc.electronic.store.services.impl;
 
 
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -9,6 +13,7 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +37,9 @@ public class UserService_Impl implements UserService {
 	@Autowired
 	private ModelMapper modelMapper;
 	
+	@Value("${user.prfile.image.path}")
+	private String imagePath;
+	
 	
 	
 	Logger logger = Logger.getLogger(UserService_Impl.class);
@@ -54,7 +62,22 @@ public class UserService_Impl implements UserService {
 	@Override
 	public void deleteUser(String userId) {
 		User user = this.userRepository.findById(userId).orElseThrow(()-> new ResourceNotFoundException("User Not found with this ID"));
+		
+		
+		
 		if(user!=null) {
+			//delete user profile image
+			String fullPath=imagePath+user.getUserImage();
+			logger.info("Image full Path"+fullPath);
+			Path path= Paths.get(fullPath);
+			
+			try {
+				Files.delete(path);
+			} catch (IOException e) {
+				logger.info("file not found Exception : IOException");
+				e.printStackTrace();
+			}
+			
 			logger.info("Deleted user is -->"+user.toString());
 			this.userRepository.delete(user);
 		}
