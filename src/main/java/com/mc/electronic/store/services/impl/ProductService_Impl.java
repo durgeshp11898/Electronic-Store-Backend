@@ -19,11 +19,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.mc.electronic.store.dtos.PagableResponse;
 import com.mc.electronic.store.dtos.ProductDTO;
+import com.mc.electronic.store.entity.Category;
 import com.mc.electronic.store.entity.Product;
 import com.mc.electronic.store.exceptions.ResourceNotFoundException;
 import com.mc.electronic.store.helper.PagableHelper;
+import com.mc.electronic.store.repositories.CategoryRepository;
 import com.mc.electronic.store.repositories.ProductRepository;
 import com.mc.electronic.store.services.ProductService;
+
 
 @Service
 public class ProductService_Impl implements ProductService {
@@ -37,6 +40,9 @@ public class ProductService_Impl implements ProductService {
 	@Value("${product.prfile.image.path}")
 	private String imagePath;
 	Logger logger = Logger.getLogger(ProductService_Impl.class);
+
+	@Autowired
+	private CategoryRepository categoryRepository;
 
 	@Override
 	public ProductDTO createProduct(ProductDTO productDTO) {
@@ -135,6 +141,46 @@ public class ProductService_Impl implements ProductService {
 
 		PagableResponse<ProductDTO> response = PagableHelper.getPagableResponse(page, ProductDTO.class);
 		return response;
+	}
+
+	@Override
+	public ProductDTO createProductWithCategory(ProductDTO productDTO, String categoryId) {
+
+		//Fetch the Category from database
+		Category category = this.categoryRepository.findById(categoryId).orElseThrow(()-> new ResourceNotFoundException("Category Id Not Found"));
+		Product product = this.modelMapper.map(productDTO, Product.class);
+
+		String productId = UUID.randomUUID().toString();
+		product.setProductAddedDate(new Date());
+		product.setProductId(productId);
+		product.setCategory(category);
+		Product savedProduct = this.productRepository.save(product);
+
+		logger.info("Product has been saved with Title{} "+savedProduct.getProductTitle());
+		return this.modelMapper.map(savedProduct, ProductDTO.class);
+
+	}
+
+	@Override
+	public ProductDTO updateProductCategory(String productId, String categoryId) {
+
+		Product product = this.productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("Product Id Not Found"));
+
+		Category category = this.categoryRepository.findById(categoryId).orElseThrow(()-> new ResourceNotFoundException("Category Id Not Found"));
+		product.setCategory(category);
+
+		Product savedProduct = productRepository.save(product);
+		return this.modelMapper.map(savedProduct, ProductDTO.class);
+	}
+
+	@Override
+	public PagableResponse<ProductDTO> getAllOfCategory(String categoryId,int pageNumber,int pageSize,String sortBy,String sortDir) {
+		Category category = this.categoryRepository.findById(categoryId).orElseThrow(()-> new ResourceNotFoundException("Category Id Not Found"));
+		Sort sort =(sortDir.equalsIgnoreCase("asc"))?(Sort.by(sortBy)).ascending():(Sort.by(sortBy)).descending();
+		Pageable pegeble = PageRequest.of(pageNumber, pageSize,sort);
+
+		Page<Product> page = this.productRepository.findByCategory(category,pegeble);
+		return PagableHelper.getPagableResponse(page,ProductDTO.class);
 	}
 
 

@@ -161,8 +161,6 @@ public class ProductController {
 
 		StreamUtils.copy(inputStream, httpServletResponse.getOutputStream());
 
-
-
 	}
 
 

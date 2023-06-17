@@ -2,9 +2,13 @@ package com.mc.electronic.store.entity;
 
 import java.util.Date;
 
+import com.mc.electronic.store.dtos.CategoryDTO;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -44,5 +48,9 @@ public class Product {
 	private boolean isStockAvailble;
 	
 	private String productImage;
+	
+	@ManyToOne
+	@JoinColumn(name = "category")
+	private Category category;
 	
 }

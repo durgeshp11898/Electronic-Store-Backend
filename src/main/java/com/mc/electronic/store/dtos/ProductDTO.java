@@ -2,7 +2,7 @@ package com.mc.electronic.store.dtos;
 
 import java.util.Date;
 
-import jakarta.validation.constraints.NotBlank;
+
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,6 +39,7 @@ public class ProductDTO {
 	private boolean isStockAvailble;
 	
 	private String productImage;
+	private CategoryDTO category;
 
 
 }
