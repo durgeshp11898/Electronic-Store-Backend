@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.mc.electronic.store.dtos.PagableResponse;
@@ -40,7 +41,8 @@ public class UserService_Impl implements UserService {
 	@Value("${user.prfile.image.path}")
 	private String imagePath;
 	
-	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	
 	Logger logger = Logger.getLogger(UserService_Impl.class);
 	
@@ -52,6 +54,9 @@ public class UserService_Impl implements UserService {
 		logger.info("users value comes from request --> "+userDTO.toString());
 		String userId= UUID.randomUUID().toString();
 		userDTO.setUserId(userId);
+		//Encoding password
+		this.passwordEncoder.encode(userDTO.getUserPassword());
+		
 		User user = this.modelMapper.map(userDTO, User.class);
 		User savedUser = this.userRepository.save(user);
 		UserDTO newDTO = this.modelMapper.map(savedUser, UserDTO.class);
